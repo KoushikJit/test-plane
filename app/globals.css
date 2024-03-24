@@ -31,3 +31,16 @@ body {
     text-wrap: balance;
   }
 }
+
+.moveDownClass{
+  position: absolute;
+  animation: shiftToDown 10s linear;
+}
+@keyframes shiftToDown {
+  from {
+    /* right: 0px; */
+  }
+  to {
+    top: 2000px;
+  }
+}

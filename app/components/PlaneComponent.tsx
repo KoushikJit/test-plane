@@ -1,12 +1,16 @@
-import { Plane } from 'lucide-react'
+import { Plane, Rocket } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 
-type Props = {}
+type Props = {
+    degrees?: number
+}
 
-const PlaneComponent = ({ }: Props) => {
+const PlaneComponent = ({ degrees }: Props) => {
     return (
         <div>
-            <Plane className='-rotate-45 w-10' />
+            <Rocket className='w-10 fill-red-500' style={{
+                transform: "rotate(" + (-45 - degrees! / 6) + "deg)",
+            }} />
         </div>
     )
 }
