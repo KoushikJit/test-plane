@@ -6,7 +6,7 @@ import CloudComponent from "./components/CloudComponent";
 import PlaneComponent from "./components/PlaneComponent";
 import { Loader, Loader2 } from "lucide-react";
 import GameInfoOverlay from "./components/GameInfoOverlay";
-import { scratch } from "./utils/audio";
+import { playtone } from "./utils/audio";
 
 const cloudGenerationInterval = 1000; // Generate new clouds every 5 seconds
 const cloudRemovalInterval = 8000; // Remove clouds older than 8 seconds
@@ -36,6 +36,15 @@ export default function Home() {
     }
     setPlane((planeRef.current as any).getBoundingClientRect());
   }
+
+  useEffect(() => {
+    if (!isDetected) {
+      playtone(true);
+    } else {
+      playtone(false);
+    }
+  }, [isDetected])
+
   ////////////////////////////////////////////////////////////////////////
   useEffect(() => {
     if (isDetected) {
@@ -68,14 +77,13 @@ export default function Home() {
 
   const collisionHandler = () => {
     setCollisionDetected(true);
-    scratch();
     setTimeout(() => {
       setCollisionDetected(false);
-    }, 100);
+    }, 300);
   }
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className={`absolute top-3 left-3 transition-all duration-500 ${isDetected ? 'w-20' : 'w-36'}`}>
+      <div className={`absolute top-3 left-3 transition-all duration-500 ${isDetected ? 'w-20' : 'w-48'}`}>
         <HandRecognizerComponent setHandResults={setHandResults} />
       </div>
       <div ref={planeRef} style={{
@@ -95,7 +103,5 @@ export default function Home() {
       </div>
     </main>
   );
-
-
 }
 
