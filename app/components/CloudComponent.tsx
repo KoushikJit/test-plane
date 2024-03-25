@@ -50,7 +50,7 @@ const CloudComponent = ({ plane, left, onCollision, isMoving }: Props) => {
             animationPlayState: isMoving ? 'running' : 'paused'
         }} >
             <Image
-                src={'/0.png'}
+                src={'/4.png'}
                 // className={`transition-all ${isMoving ? 'animate-spin-slow' : ''}`}
                 style={{
                     animation: "spin 3s linear infinite",
