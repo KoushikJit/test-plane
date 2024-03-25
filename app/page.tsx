@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import CloudComponent from "./components/CloudComponent";
 import PlaneComponent from "./components/PlaneComponent";
 import { Loader, Loader2 } from "lucide-react";
+import GameInfoOverlay from "./components/GameInfoOverlay";
+import { scratch } from "./utils/audio";
 
 const cloudGenerationInterval = 1000; // Generate new clouds every 5 seconds
 const cloudRemovalInterval = 8000; // Remove clouds older than 8 seconds
@@ -12,7 +14,7 @@ let removalIntervalId: any;
 let generationIntervalId: any;
 export default function Home() {
   const [clouds, setClouds] = useState<any[]>([]);
-
+  const [collisionDetected, setCollisionDetected] = useState(false);
   // plane states ////////////////////////////////////////////////
   const [isDetected, setIsDetected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,7 +67,11 @@ export default function Home() {
   }, [isDetected])
 
   const collisionHandler = () => {
-
+    setCollisionDetected(true);
+    scratch();
+    setTimeout(() => {
+      setCollisionDetected(false);
+    }, 100);
   }
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
@@ -75,7 +81,9 @@ export default function Home() {
       <div ref={planeRef} style={{
         position: 'absolute',
         left: left,
-        marginTop: '500px'
+        marginTop: '500px',
+        transition: 'all',
+        animationDuration: "10ms"
       }}>
         <PlaneComponent degrees={degrees} />
       </div>
@@ -83,8 +91,7 @@ export default function Home() {
         {clouds.map((cloud, index) => {
           return <CloudComponent key={cloud.key} plane={plane} left={left} onCollision={collisionHandler} isMoving={isDetected} />
         })}
-        {(!isLoading && !isDetected) && <div className="h-screen w-screen overflow-hidden flex items-center justify-center animate-ping text-2xl font-extrabold">P A U S E D</div>}
-        {isLoading && <div className="h-screen w-screen overflow-hidden flex items-center justify-center animate-pulse text-2xl font-extrabold"><Loader2 className="animate-spin" /></div>}
+        <GameInfoOverlay info={{ isLoading, isDetected, collisionDetected }} />
       </div>
     </main>
   );
