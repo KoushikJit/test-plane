@@ -8,7 +8,7 @@ type Props = {
 const PlaneComponent = ({ degrees }: Props) => {
     return (
         <div>
-            <Rocket className='w-10 fill-red-500' style={{
+            <Rocket size={40} className= 'fill-red-600 transition-transform duration-75' style={{
                 transform: "rotate(" + (-45 - degrees! / 6) + "deg)",
             }} />
         </div>

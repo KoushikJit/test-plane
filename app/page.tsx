@@ -4,59 +4,72 @@ import HandRecognizerComponent from "./components/HandRecognizerComponent";
 import { useEffect, useRef, useState } from "react";
 import CloudComponent from "./components/CloudComponent";
 import PlaneComponent from "./components/PlaneComponent";
+import { Loader, Loader2 } from "lucide-react";
 
+const cloudGenerationInterval = 1000; // Generate new clouds every 5 seconds
+const cloudRemovalInterval = 8000; // Remove clouds older than 8 seconds
+let removalIntervalId: any;
+let generationIntervalId: any;
 export default function Home() {
-  const planeRef = useRef(null)
-  const [tilt, setTilt] = useState();
-  const [degrees, setDegrees] = useState<number>(0)
   const [clouds, setClouds] = useState<any[]>([]);
-  useEffect(() => {
-    const cloudGenerationInterval =  1000; // Generate new clouds every 5 seconds
-    const cloudRemovalInterval = 10000; // Remove clouds older than 8 seconds
 
-    // Cloud generation interval
-    const generationIntervalId = setInterval(() => {
-      const now = Date.now();
-      setClouds((prev) => [...prev, { time: now,  key: now + Math.random() }, { time: now,  key: now + Math.random() }, { time: now,  key: now + Math.random() }, { time: now,  key: now + Math.random() } ]);
-    }, cloudGenerationInterval);
-
-    // Cloud removal interval
-    // const removalIntervalId = setInterval(() => {
-    //   setClouds((prevClouds) => [...prevClouds].slice(1)); // Remove first four clouds
-    // }, cloudRemovalInterval);
-    const removalIntervalId = setInterval(() => {
-      setClouds((prevClouds) => {
-        const now = Date.now();
-        return prevClouds.filter((cloud) => {
-          // Assuming each cloud object has a 'createdAt' property
-          return now - (cloud as any).time < cloudRemovalInterval;
-        });
-      });
-    }, cloudRemovalInterval);
-
-    // Cleanup function (runs when component unmounts)
-    return () => {
-      clearInterval(generationIntervalId);
-      clearInterval(removalIntervalId);
-    };
-  }, []);
-
+  // plane states ////////////////////////////////////////////////
+  const [isDetected, setIsDetected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [degrees, setDegrees] = useState<number>(0);
   const [left, setLeft] = useState<number>(0);
   const [plane, setPlane] = useState<any>(0)
+  const planeRef = useRef(null);
+
   useEffect(() => {
+    // plane init position ////////////////////////////////////////////
     setLeft(window.innerWidth / 2 - 20)
   }, [])
   const setHandResults = (result: any) => {
+    setIsLoading(prev => result.isLoading !== undefined ? result.isLoading : prev);
+    setIsDetected(result.isDetected);
+    setDegrees(result.degrees);
     if (result.degrees && (result.degrees > 0 || result.degrees < 0)) {
       setLeft(prev => prev - result.degrees / 6)
-      setDegrees(result.degrees);
     }
     setPlane((planeRef.current as any).getBoundingClientRect());
   }
+  ////////////////////////////////////////////////////////////////////////
+  useEffect(() => {
+    if (isDetected) {
+      // Cloud generation interval
+      generationIntervalId = setInterval(() => {
+        const now = Date.now();
+        setClouds((prev) => [...prev, { time: now, key: now + Math.random() }, { time: now, key: now + Math.random() }, { time: now, key: now + Math.random() }, { time: now, key: now + Math.random() }]);
+      }, cloudGenerationInterval);
+    }
+    return () => {
+      clearInterval(generationIntervalId);
+    };
+  }, [isDetected])
 
+  useEffect(() => {
+    if (isDetected) {
+      removalIntervalId = setInterval(() => {
+        setClouds((prevClouds) => {
+          const now = Date.now();
+          return prevClouds.filter((cloud) => {
+            return now - (cloud as any).time < cloudRemovalInterval;
+          });
+        });
+      }, cloudRemovalInterval);
+    }
+    return () => {
+      clearInterval(removalIntervalId);
+    };
+  }, [isDetected])
+
+  const collisionHandler = () => {
+
+  }
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <div className="absolute top-3 left-3 h-12 w-20">
+      <div className={`absolute top-3 left-3 transition-all duration-500 ${isDetected ? 'w-20' : 'w-36'}`}>
         <HandRecognizerComponent setHandResults={setHandResults} />
       </div>
       <div ref={planeRef} style={{
@@ -66,12 +79,16 @@ export default function Home() {
       }}>
         <PlaneComponent degrees={degrees} />
       </div>
-      <div className="absolute w-screen h-screen overflow-hidden">
+      <div className="absolute z-10 w-screen h-screen overflow-hidden">
         {clouds.map((cloud, index) => {
-          return <CloudComponent key={cloud.key} plane={plane} left={left} />
+          return <CloudComponent key={cloud.key} plane={plane} left={left} onCollision={collisionHandler} isMoving={isDetected} />
         })}
+        {(!isLoading && !isDetected) && <div className="h-screen w-screen overflow-hidden flex items-center justify-center animate-ping text-2xl font-extrabold">P A U S E D</div>}
+        {isLoading && <div className="h-screen w-screen overflow-hidden flex items-center justify-center animate-pulse text-2xl font-extrabold"><Loader2 className="animate-spin" /></div>}
       </div>
     </main>
   );
+
+
 }
 

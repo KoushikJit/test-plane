@@ -5,35 +5,30 @@ import React, { useEffect, useRef, useState } from 'react'
 
 type Props = {
     plane?: any,
-    left?: number
+    left?: number,
+    onCollision: () => void,
+    isMoving?: boolean
 }
-const fps = 30
 let windowWidth: number;
-let windowHeight: number;
-const CloudComponent = ({ plane, left }: Props) => {
+const CloudComponent = ({ plane, left, onCollision, isMoving }: Props) => {
     const componentRef = useRef(null);
-    let ySpeed = 2;
     const [xState, setXState] = useState(0)
     const [yState, setYState] = useState(-150)
     const mountainRef = useRef(null);
     const [collided, setCollided] = useState<boolean>(false);
-    const [displayM, setDisplayM] = useState<string>();
 
     useEffect(() => {
         //0. get window width
         windowWidth = window.innerWidth;
-        windowHeight = window.innerHeight;
-        //1. randomize x
+        //1. randomize x and y
         setXState(Math.random() * windowWidth);
-        setYState(-Math.random() * (500-100) - 100);
-        //2. move y with set interval
-        const interval = setInterval(() => {
-            // setYState((prevY) => prevY + ySpeed)
-        }, 1000 / fps)
+        setYState(-Math.random() * (500 - 100) - 100);
     }, [])
 
     useEffect(() => {
-        setCollided(isColliding());
+        const collision = isColliding;
+        setCollided(collision);
+        onCollision();
     }, [left])
 
     function isColliding() {
@@ -47,13 +42,22 @@ const CloudComponent = ({ plane, left }: Props) => {
         return false
     }
     return (
-        <div ref={componentRef} className='moveDownClass' style={{
+        <div ref={componentRef} className={`transition-all`} style={{
             position: 'absolute',
+            animation: `shiftToDown 10s linear forwards`,
             left: xState,
             top: yState,
+            animationPlayState: isMoving ? 'running' : 'paused'
         }} >
-            {/* <Image src={'/asteroid.png'} className='animate-spin-slow h-20 w-20' width={50} height={50} alt={''} /> */}
-            <Badge ref={mountainRef} className={`w-10 h-10 animate-spin-slow ${collided ? 'fill-red-400' : ''} ${!collided ? 'fill-white' : ''} `} />
+            <Image
+                src={'/0.png'}
+                // className={`transition-all ${isMoving ? 'animate-spin-slow' : ''}`}
+                style={{
+                    animation: "spin 3s linear infinite",
+                    animationPlayState: isMoving ? 'running' : 'paused'
+                }}
+                width={80} height={80} alt={''} />
+            {/* <Badge ref={mountainRef} className={`w-10 h-10 animate-spin-slow ${collided ? 'fill-red-400' : ''} ${!collided ? 'fill-white' : ''} `} /> */}
         </div>
 
     )

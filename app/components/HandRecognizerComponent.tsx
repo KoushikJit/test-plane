@@ -20,6 +20,7 @@ const HandRecognizerComponent = ({ setHandResults }: Props) => {
 
     // ready video/ webcam ///////////////////////////
     async function initVideoAndModel() {
+        setHandResults({ isLoading: true })
         const videoElement = videoRef.current;
         if (!videoElement) return;
 
@@ -32,6 +33,7 @@ const HandRecognizerComponent = ({ setHandResults }: Props) => {
             const detections: HandLandmarkerResult = handLandmarker.detectForVideo(videoElement, Date.now());
             deduceResult(detections, setHandResults)
         }, 1000 / 30);
+        setHandResults({ isLoading: false })
     }
     return (
         <div className='border-2 border-gray-700'>
@@ -90,14 +92,20 @@ function deduceResult(detections: HandLandmarkerResult, setHandResults: (result:
             z: leftZ,
         } = detections.landmarks[leftIndex][6]; // getting the index finger pip position
 
+        const isDetected = true;
         const tilt = (rightY - leftY) / (rightX - leftX);
         const degrees = (Math.atan(tilt) * 180) / Math.PI;
 
         setHandResults({
-            tilt, degrees
+            isDetected, tilt, degrees
         })
     } else {
-
+        const isDetected = false;
+        const tilt = 0
+        const degrees = 0
+        setHandResults({
+            isDetected, tilt, degrees
+        })
     }
 }
 
