@@ -37,14 +37,6 @@ export default function Home() {
     setPlane((planeRef.current as any).getBoundingClientRect());
   }
 
-  useEffect(() => {
-    if (!isDetected) {
-      playtone(true);
-    } else {
-      playtone(false);
-    }
-  }, [isDetected])
-
   ////////////////////////////////////////////////////////////////////////
   useEffect(() => {
     if (isDetected) {
@@ -53,14 +45,7 @@ export default function Home() {
         const now = Date.now();
         setClouds((prev) => [...prev, { time: now, key: now + Math.random() }, { time: now, key: now + Math.random() }, { time: now, key: now + Math.random() }, { time: now, key: now + Math.random() }]);
       }, cloudGenerationInterval);
-    }
-    return () => {
-      clearInterval(generationIntervalId);
-    };
-  }, [isDetected])
 
-  useEffect(() => {
-    if (isDetected) {
       removalIntervalId = setInterval(() => {
         setClouds((prevClouds) => {
           const now = Date.now();
@@ -69,8 +54,13 @@ export default function Home() {
           });
         });
       }, cloudRemovalInterval);
+      playtone(false);
+    }else{
+      playtone(true);
     }
+
     return () => {
+      clearInterval(generationIntervalId);
       clearInterval(removalIntervalId);
     };
   }, [isDetected])
